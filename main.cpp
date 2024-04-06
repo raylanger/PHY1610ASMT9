@@ -5,7 +5,7 @@
 
 int main(){
     int rank, size;
-    int N = 10, Z = 10;
+    int N = 1000, Z = 1000;
 
     MPI_Init(nullptr,nullptr);
 
@@ -26,7 +26,7 @@ int main(){
             }
             
             std::sort(rands.begin(),rands.end());
-            std::cout << rands << "\n";
+            // std::cout << rands << "\n";
             int counter = 0;
             double limit = (counter+1.0)/size;
             int data_init = 0;
@@ -50,8 +50,20 @@ int main(){
         MPI_Bcast(offsets.data(), size, MPI_INT, 0, MPI_COMM_WORLD);
         rvector<double> recv_vals(arr_sizes[rank]);
         MPI_Scatterv(rands.data(), arr_sizes.data(), offsets.data(), MPI_DOUBLE, recv_vals.data(), arr_sizes[rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        std::cout << "Rank " << rank << " received " << recv_vals << ".\n";
+        // std::cout << "Rank " << rank << " received " << recv_vals << ".\n";
         // std::cout << "Rank " << rank << " received " << arr_sizes[rank] << ", " << offsets[rank] << ".\n";
+
+        rvector<int> counts(64/size);
+        counts.fill(0);
+        int index;
+        double init = (rank+0.0)/size;
+        double dx = 0.015625;
+
+        for (int i = 0; i < recv_vals.size(); i++){
+            index = (recv_vals[i]-init)/dx;
+            counts[index] += 1;
+        }
+        std::cout << "Rank " << rank << " found " << counts << ".\n";
     }
     MPI_Finalize();
     return 0;
