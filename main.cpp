@@ -22,7 +22,7 @@ int main(){
 
         if (rank = 0){
             for(int i = 0; i < Z; i++){
-                rands[i] = uniform(gen)
+                rands[i] = uniform(gen);
             }
             std::sort(rands.begin(),rands.end());
 
