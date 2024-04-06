@@ -5,7 +5,7 @@
 
 int main(){
     int rank, size;
-    int N = 1000, Z = 500;
+    int N = 1'000'000'000, Z = 100'000;
 
     MPI_Init(nullptr,nullptr);
 
@@ -17,12 +17,14 @@ int main(){
     rvector<int> total_counts(64);
     total_counts.fill(0);
     for (int j = 0; j < N/Z; j ++){
-
         rvector<int> arr_sizes(size);
         rvector<int> offsets(size);
         rvector<double> rands(Z);
         rvector<int> batch_counts(64);  
         if (rank == 0){
+            if (j % 500 == 0){
+                std::cout << "Batch "<<j <<"\n";
+            }
             for(int i = 0; i < Z; i++){
                 rands[i] = uniform(gen);
             }
@@ -74,7 +76,7 @@ int main(){
         }
         MPI_Gatherv(counts.data(), 64/size, MPI_INT, batch_counts.data(), send_counts.data(), send_offsets.data(),MPI_INT, 0, MPI_COMM_WORLD);
         if (rank == 0){
-            std::cout<<batch_counts<<"\n";
+            // std::cout<<batch_counts<<"\n";
             for (int i = 0; i<64; i++){
                 total_counts[i]+=batch_counts[i];
             }
