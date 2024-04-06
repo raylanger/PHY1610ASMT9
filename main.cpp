@@ -5,7 +5,7 @@
 
 int main(){
     int rank, size;
-    int N = 1000, Z = 1000;
+    int N = 1000, Z = 500;
 
     MPI_Init(nullptr,nullptr);
 
@@ -14,12 +14,14 @@ int main(){
 
     std::uniform_real_distribution<double> uniform(0.0,1.0);
     std::mt19937 gen(std::random_device{}());
-
+    rvector<int> total_counts(64);
+    total_counts.fill(0);
     for (int j = 0; j < N/Z; j ++){
+
         rvector<int> arr_sizes(size);
         rvector<int> offsets(size);
         rvector<double> rands(Z);
-
+        rvector<int> batch_counts(64);  
         if (rank == 0){
             for(int i = 0; i < Z; i++){
                 rands[i] = uniform(gen);
@@ -63,7 +65,23 @@ int main(){
             index = (recv_vals[i]-init)/dx;
             counts[index] += 1;
         }
-        std::cout << "Rank " << rank << " found " << counts << ".\n";
+        // std::cout << "Rank " << rank << " found " << counts << ".\n";
+        rvector<int> send_counts(size);
+        send_counts.fill(64/size);
+        rvector<int> send_offsets(size);
+        for (int i = 0; i<size;i++){
+            send_offsets[i] = (64/size)*i;
+        }
+        MPI_Gatherv(counts.data(), 64/size, MPI_INT, batch_counts.data(), send_counts.data(), send_offsets.data(),MPI_INT, 0, MPI_COMM_WORLD);
+        if (rank == 0){
+            std::cout<<batch_counts<<"\n";
+            for (int i = 0; i<64; i++){
+                total_counts[i]+=batch_counts[i];
+            }
+        }
+    }
+    if (rank == 0){
+        std::cout<<total_counts<<"\n";
     }
     MPI_Finalize();
     return 0;
