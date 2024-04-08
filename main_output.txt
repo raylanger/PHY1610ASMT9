@@ -1,0 +1,24 @@
+Running with 1 Processors
+
+real	1m38.157s
+user	1m32.827s
+sys	0m5.038s
+
+Running with 4 Processors
+
+real	1m31.744s
+user	6m5.019s
+sys	0m0.273s
+
+Running with 16 Processors
+
+real	1m44.930s
+user	27m48.100s
+sys	0m1.534s
+
+Running with 32 Processors
+
+real	1m45.542s
+user	27m54.662s
+sys	0m2.472s
+

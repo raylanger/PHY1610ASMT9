@@ -1,0 +1,26 @@
+Running with 1 Processors
+
+real	1m27.168s
+user	1m26.686s
+sys	0m0.123s
+
+Running with 4 Processors
+
+real	1m18.045s
+user	5m10.487s
+sys	0m0.267s
+
+Running with 16 Processors
+
+real	1m26.741s
+user	22m55.575s
+sys	0m2.542s
+
+Running with 32 Processors
+
+real	1m28.575s
+user	23m23.055s
+sys	0m2.161s
+
+NOTE:Evidently, the parallelization implemented here is not particularly effective, likely due to the time required for the processors to communicate. Effective parallelization would require better reduction, which has not been done here.
+
