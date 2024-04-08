@@ -2,6 +2,7 @@
 #include <random>
 #include <rarray>
 #include <iostream>
+#include "prng.h"
 
 int main(){
     int rank, size;
@@ -12,8 +13,6 @@ int main(){
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    std::uniform_real_distribution<double> uniform(0.0,1.0);
-    std::mt19937 gen(std::random_device{}());
     rvector<int> total_counts(64);
     total_counts.fill(0);
 
@@ -36,25 +35,31 @@ int main(){
     int index;
     double init = (rank+0.0)/size;
     double dx = 0.015625;
-    
+
+    rvector<int> arr_sizes(size);
+    rvector<int> offsets(size);
+    rvector<double> rands(Z);
+    rvector<double> rands_rank(Z/size);
+    rvector<int> batch_counts(64); 
+
+    static PRNG gen(10);
+    static std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    int discard = (N*rank)/size;
+    gen.discard(discard);
     for (int j = 0; j < N/Z; j ++){
-        rvector<int> arr_sizes(size);
-        rvector<int> offsets(size);
-        rvector<double> rands(Z);
-        rvector<double> rands_rank(Z/size);
-        rvector<int> batch_counts(64);  
+         
         if (rank == 0){
             if (j % 500 == 0){
                 std::cout << "Batch "<<j <<"\n";
             }
         }
-
-        gen.discard(Z*rank/size);
+        
         for(int i = 0; i < Z/size; i++){
-            rands_rank[i] = uniform(gen);
+            rands_rank[i] = dis(gen);
         }
 
-        MPI_Gatherv(rands_rank.data(), Z/size, MPI_DOUBLE, rands.data(), send_rands.data(), rands_offsets.data(),MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(rands_rank.data(), Z/size, MPI_DOUBLE, rands.data(), Z/size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         if (rank == 0){
             std::sort(rands.begin(),rands.end());
             // std::cout << rands << "\n";

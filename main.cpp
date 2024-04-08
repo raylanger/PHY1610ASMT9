@@ -2,6 +2,7 @@
 #include <random>
 #include <rarray>
 #include <iostream>
+#include "prng.h"
 
 int main(){
     int rank, size;
@@ -12,10 +13,12 @@ int main(){
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    std::uniform_real_distribution<double> uniform(0.0,1.0);
-    std::mt19937 gen(std::random_device{}());
     rvector<int> total_counts(64);
     total_counts.fill(0);
+
+    static PRNG gen(10);
+    static std::uniform_real_distribution<> dis(0.0, 1.0);
+
     for (int j = 0; j < N/Z; j ++){
         rvector<int> arr_sizes(size);
         rvector<int> offsets(size);
@@ -26,11 +29,11 @@ int main(){
                 std::cout << "Batch "<<j <<"\n";
             }
             for(int i = 0; i < Z; i++){
-                rands[i] = uniform(gen);
+                rands[i] = dis(gen);
             }
             
             std::sort(rands.begin(),rands.end());
-            // std::cout << rands << "\n";
+
             int counter = 0;
             double limit = (counter+1.0)/size;
             int data_init = 0;
@@ -77,7 +80,7 @@ int main(){
         MPI_Gatherv(counts.data(), 64/size, MPI_INT, batch_counts.data(), send_counts.data(), send_offsets.data(),MPI_INT, 0, MPI_COMM_WORLD);
         if (rank == 0){
             // std::cout<<batch_counts<<"\n";
-            for (int i = 0; i<64; i++){
+            for (int i = 0; i <64;i++){
                 total_counts[i]+=batch_counts[i];
             }
         }
