@@ -67,7 +67,7 @@ int main(){
 
     for (int j = 0; j < N/Z; j ++){
         // Reset batch counts
-         batch_counts.fill(0.0)
+         batch_counts.fill(0.0);
 
         // Progress counter
         if (rank == 0){
